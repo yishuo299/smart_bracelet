@@ -189,14 +189,3 @@ TH:60,120,95,36,38
 
 ![手环 PCB](https://piv.cc.cd/file/BQACAgUAAyEGAASLVN5eAAJsr2qixgFZqtQuWzM36BlFbsW4LUyHAAKzJAACMD4RVUukm-AtwMjQPQQ.jpg)
 
-## 公开发布说明
-
-本仓库已经排除以下不适合公开上传的内容：
-
-- Android 本机配置 `local.properties`
-- Android 构建缓存和安装包产物
-- Keil 编译输出文件
-- Keil 用户界面缓存文件 `*.uvguix.*`
-- 常见密钥文件和签名文件
-
-如果后续新增蓝牙密钥、签名证书、接口地址、个人路径或账号信息，请不要提交到 GitHub。
