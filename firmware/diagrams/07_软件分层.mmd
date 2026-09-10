@@ -1,0 +1,23 @@
+graph TB
+    subgraph L3["应用层"]
+        UI[界面与菜单]
+        ALM[报警策略]
+        BLE_APP[蓝牙组包发送]
+    end
+
+    subgraph L2["驱动与业务层"]
+        DRV[driver 聚合]
+        HAL["DS18B20/MAX30102/AD8232<br/>DS1307/LCD 等驱动"]
+    end
+
+    subgraph L1["硬件与中断"]
+        IRQ[USART2 TIM3 TIM4]
+        DEV["DS18B20/MAX30102/AD8232<br/>DS1307/LCD/按键/LED/蜂鸣器"]
+    end
+
+    UI --> DRV
+    ALM --> DRV
+    BLE_APP --> DRV
+    DRV --> HAL
+    HAL --> DEV
+    IRQ --> DRV

@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph MCU["STM32F103 主控"]
+        CORE[内核与应用]
+    end
+
+    DS18["DS18B20数字温度传感器<br/>（体表体温）"] -->|1-Wire| CORE
+    MAX30["MAX30102心率血氧传感器<br/>（光电法 PPG）"] -->|I2C| CORE
+    AD82["AD8232心电采集前端<br/>（心电信号调理）"] -->|ADC/GPIO| CORE
+    DS13["DS1307实时时钟芯片<br/>（年月日时分秒）"] -->|I2C| CORE
+
+    CORE -->|SPI/8080 等| LCD_MOD["LCD液晶显示模块<br/>（人机界面）"]
+    CORE --> KEY_IN["独立按键<br/>（菜单与设置）"]
+    CORE --> LED_IND["LED指示灯<br/>（状态/报警）"]
+    CORE --> BEEP_MOD["有源蜂鸣器<br/>（报警声）"]
+
+    BLE["蓝牙透传模块<br/>（USART2 无线串口）"] <-->|USART2| CORE
+    ASR["ASRPRO语音识别模块<br/>（语音播报/闹钟）"] <-->|UART| CORE
+
+    TIM3["TIM3定时器<br/>（周期节拍）"] --- CORE
+    TIM4["TIM4定时器<br/>（秒表计时）"] --- CORE

@@ -1,0 +1,35 @@
+# Android / Gradle
+.gradle/
+.idea/
+.kotlin/
+**/build/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+*.iml
+
+# Keil / STM32 build outputs
+OBJ/
+Objects/
+Listings/
+*.uvguix.*
+*.o
+*.d
+*.crf
+*.lst
+*.map
+*.hex
+*.axf
+*.lnp
+*.htm
+*.bak
+*.Bak
+JLinkLog.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp

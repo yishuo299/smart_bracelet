@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>医疗健康监测 — Mermaid 框图预览</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: "neutral", flowchart: { htmlLabels: true } });
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 1rem auto; padding: 0 1rem; }
+    h2 { border-bottom: 1px solid #ccc; margin-top: 2rem; }
+    .mermaid { margin: 1rem 0; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>医疗健康监测设备 — 框图（型号+作用）</h1>
+  <p>与工程一致：DS18B20、MAX30102、AD8232、DS1307 等。需联网加载 Mermaid。第 6 图为 mindmap，若空白可忽略。</p>
+
+  <h2>1 硬件拓扑</h2>
+  <div class="mermaid">
+flowchart TB
+    subgraph MCU["STM32F103 主控"]
+        CORE[内核与应用]
+    end
+    DS18["DS18B20数字温度传感器<br/>（体表体温）"] -->|1-Wire| CORE
+    MAX30["MAX30102心率血氧传感器<br/>（光电法 PPG）"] -->|I2C| CORE
+    AD82["AD8232心电采集前端<br/>（心电信号调理）"] -->|ADC/GPIO| CORE
+    DS13["DS1307实时时钟芯片<br/>（年月日时分秒）"] -->|I2C| CORE
+    CORE -->|SPI/8080 等| LCD_MOD["LCD液晶显示模块<br/>（人机界面）"]
+    CORE --> KEY_IN["独立按键<br/>（菜单与设置）"]
+    CORE --> LED_IND["LED指示灯<br/>（状态/报警）"]
+    CORE --> BEEP_MOD["有源蜂鸣器<br/>（报警声）"]
+    BLE["蓝牙透传模块<br/>（USART2 无线串口）"] <-->|USART2| CORE
+    ASR["ASRPRO语音识别模块<br/>（语音播报/闹钟）"] <-->|UART| CORE
+    TIM3["TIM3定时器<br/>（周期节拍）"] --- CORE
+    TIM4["TIM4定时器<br/>（秒表计时）"] --- CORE
+  </div>
+
+  <h2>2 数据流</h2>
+  <div class="mermaid">
+flowchart LR
+    subgraph S1["传感器与时间输入"]
+        A["DS18B20数字温度传感器<br/>（体温）"]
+        B["MAX30102心率血氧传感器<br/>（心率/血氧）"]
+        C["AD8232心电采集前端<br/>（心电波形）"]
+        D["DS1307实时时钟芯片<br/>（当前时间）"]
+    end
+    subgraph S2["STM32F103 处理"]
+        E["采样与缓冲"]
+        F["阈值与报警"]
+        G["LCD显示驱动"]
+    end
+    subgraph S3["输出与上报"]
+        H["蓝牙透传模块<br/>（测量数据）"]
+        I["LED/蜂鸣器<br/>（声光报警）"]
+    end
+    A --> E
+    B --> E
+    C --> E
+    D --> E
+    E --> F
+    E --> G
+    F --> I
+    E --> H
+  </div>
+
+  <h2>3 蓝牙阈值时序</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant Host as 手机或PC
+    participant BLE as 蓝牙透传模块
+    participant UART as USART2中断
+    participant Parse as 命令解析
+    participant Th as threshold数组
+    Host->>BLE: 发送一行 TH: 指令
+    BLE->>UART: 串口字节
+    UART->>Parse: 收到换行则解析
+    Parse->>Th: Driver_Set_Threshold
+    Note over Th: 更新心率/血氧/体温限值
+  </div>
+
+  <h2>4 主循环分工</h2>
+  <div class="mermaid">
+flowchart TD
+    A[主循环] --> B["Get_Data<br/>读DS18B20/MAX30102/AD8232/DS1307"]
+    A --> C[Hardware_Hander]
+    A --> D[OLED_Show 界面]
+    C --> C1{是否超限?}
+    C1 -->|是| C2[LED 蜂鸣 蓝牙 Danger]
+    C1 -->|否| C3[关闭声光]
+    C --> C4{定时上报?}
+    C4 -->|是| C5[Bluetooth_Send_Data]
+    C4 -->|否| C6[本周期不上报]
+  </div>
+
+  <h2>5 界面状态</h2>
+  <div class="mermaid">
+stateDiagram-v2
+    [*] --> 表盘
+    表盘 --> 心率页 : 按键
+    心率页 --> 血氧页 : 按键
+    血氧页 --> 体温页 : 按键
+    体温页 --> 心电页 : 按键
+    心电页 --> 功能菜单 : 按键
+    功能菜单 --> 秒表 : 选择
+    功能菜单 --> 校时 : 选择
+    功能菜单 --> 闹钟 : 选择
+    功能菜单 --> 报警开关 : 选择
+    功能菜单 --> 阈值设置 : 选择
+    表盘 --> 功能菜单 : 多页切换
+    秒表 --> 功能菜单 : 返回
+  </div>
+
+  <h2>6 硬件脑图（mindmap）</h2>
+  <div class="mermaid">
+mindmap
+  root((医疗健康监测))
+    主控MCU
+      STM32F103
+    传感
+      DS18B20数字温度传感器（体温）
+      MAX30102心率血氧传感器（光电容积脉搏）
+      AD8232心电采集前端（心电调理）
+    时间
+      DS1307实时时钟芯片（RTC）
+    人机
+      LCD液晶显示模块
+      独立按键
+      LED指示灯
+      有源蜂鸣器
+    通信
+      蓝牙透传模块 USART2
+      ASRPRO语音识别模块
+    定时
+      TIM3周期节拍
+      TIM4秒表
+    未使用
+      MPU6050六轴（本设计未接）
+  </div>
+
+  <h2>7 软件分层</h2>
+  <div class="mermaid">
+graph TB
+    subgraph L3["应用层"]
+        UI[界面与菜单]
+        ALM[报警策略]
+        BLE_APP[蓝牙组包发送]
+    end
+    subgraph L2["驱动与业务层"]
+        DRV[driver 聚合]
+        HAL["DS18B20/MAX30102/AD8232<br/>DS1307/LCD 等驱动"]
+    end
+    subgraph L1["硬件与中断"]
+        IRQ[USART2 TIM3 TIM4]
+        DEV["DS18B20/MAX30102/AD8232<br/>DS1307/LCD/按键/LED/蜂鸣器"]
+    end
+    UI --> DRV
+    ALM --> DRV
+    BLE_APP --> DRV
+    DRV --> HAL
+    HAL --> DEV
+    IRQ --> DRV
+  </div>
+</body>
+</html>

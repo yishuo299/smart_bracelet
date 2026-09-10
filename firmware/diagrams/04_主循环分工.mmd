@@ -1,0 +1,12 @@
+flowchart TD
+    A[主循环] --> B["Get_Data 读DS18B20/MAX30102/AD8232/DS1307"]
+    A --> C[Hardware_Hander]
+    A --> D[OLED_Show 界面]
+
+    C --> C1{是否超限?}
+    C1 -->|是| C2[LED 蜂鸣 蓝牙 Danger]
+    C1 -->|否| C3[关闭声光]
+
+    C --> C4{定时上报?}
+    C4 -->|是| C5[Bluetooth_Send_Data]
+    C4 -->|否| C6[本周期不上报]

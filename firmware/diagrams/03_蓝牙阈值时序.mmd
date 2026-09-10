@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Host as 手机或PC
+    participant BLE as 蓝牙透传模块
+    participant UART as USART2中断
+    participant Parse as 命令解析
+    participant Th as threshold数组
+
+    Host->>BLE: 发送一行 TH: 指令
+    BLE->>UART: 串口字节
+    UART->>Parse: 收到换行则解析
+    Parse->>Th: Driver_Set_Threshold
+    Note over Th: 更新心率/血氧/体温限值
